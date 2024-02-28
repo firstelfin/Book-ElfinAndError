@@ -16,6 +16,7 @@ version = '0.1.0'
 
 extensions = [
     'myst_parser',
+    'sphinx_copybutton',
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
