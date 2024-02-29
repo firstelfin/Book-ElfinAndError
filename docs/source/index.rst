@@ -15,3 +15,4 @@
    usage
    api
    pythonTrick/python_trick
+   gitTrick/git_trick
