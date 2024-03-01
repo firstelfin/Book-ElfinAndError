@@ -4,7 +4,7 @@
 
 查询两个分支差异：
 
-```shell
+```console
 $ git diff branch1 branch2
 diff --git a/sphinx_study/sphinx_utils/add2.py b/sphinx_study/sphinx_utils/add2.py
 index bef1078..f27bbd3 100644
