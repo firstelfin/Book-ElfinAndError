@@ -50,6 +50,9 @@ async def download_base_and_dete(base_images):
 
 我们根据[async/await介绍](./async_await.md)得知，上面的优化是有的，我常规的concurrent多线程是并发处理，涉及线程切换，这个操作本质上也是一个耗时操作；而使用异步(协程)处理本质还是并发，只是少了一些切换的操作。即使协程已经非常优秀了，但是实际使用过程中，我们遇到的是高IO的操作，这里推荐使用[multiprocessing](https://docs.python.org/zh-cn/3/library/multiprocessing.html).
 
+[测试参考资源](https://blog.csdn.net/BobYuan888/article/details/109266020)
+
+
 ### 3.1 map并行
 
 ```python
@@ -92,4 +95,56 @@ async def download_base_and_dete2(file: File):
 > 经过测试下载耗时减少了60%左右
 
 ---
+
+### 3.2 imap并行
+
+```python
+def download_imap(urls):
+    """检测图与底图下载
+
+    :param File file: 入参对象
+    :return list[btyes]: 所有图片字节流
+    """
+
+    pool = ThreadPool(POOL_NUM)
+    res = pool.imap(httpx_get, urls, 8)
+    pool.close()
+    pool.join()
+    # TODO: 检测每一张图是否下载成功
+
+    return res
+```
+
+对于很长的迭代器，给 chunksize 设置一个很大的值会比默认值 1 极大 地加快执行速度。
+
+> 测试中发现：imap与map效果一样，可能是请求数量不够（reqNum:48）
+
+---
+
+### 3.3 map_async
+
+```python
+async def download_map_async(urls):
+    """检测图与底图下载
+
+    :param File file: 入参对象
+    :return list[btyes]: 所有图片字节流
+    """
+
+    pool = ThreadPool(POOL_NUM)
+    res = pool.map_async(httpx_get, urls)
+    pool.close()
+    pool.join()
+    # TODO: 检测每一张图是否下载成功
+
+    return res
+
+
+def test2():
+    res = download_map_async(LOCAL_URLS)
+    res = asyncio.run(res).get()
+    return res
+```
+
+> 异步测试时间比map、imap要稳定一些，时间就快一秒左右（reqNum:48  * 10次循环）
 
