@@ -16,4 +16,5 @@
    api
    pythonTrick/python_trick
    gitTrick/git_trick
+   diffusion/diffusion_study
    music/music
