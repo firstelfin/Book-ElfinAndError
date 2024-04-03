@@ -54,12 +54,13 @@ async def lifespan(app: FastAPI):
     # app killed post op
     print("·"*12 + f" {os.getpid()} shutdown ok " + "·"*12)
 ```
-这里我们定义了start_up和shutdown的操作，以及使用warm_up做app的启动测试。
 
+这里我们定义了start_up和shutdown的操作，以及使用warm_up做app的启动测试。
 
 ## 4、路由函数设置
 
 ### 4.1 同步APP
+
 ```python
 @app.post("/test", response_model=ResItem)
 async def infer_item(
@@ -125,13 +126,9 @@ async def http_exception_handler(request: Request, exec: RequestValidationError)
 
 通过使用装饰器向exception_handler注册了请求体错误处理函数。
 
-
-
-
 ## 8、启动APP
 
 ### 8.1 常规启动
-
 
 ```python
 uvicorn.run("xxx:app", host=os.getenv("HOST"), port=int(os.getenv("PORT")), workers=2)
@@ -148,7 +145,42 @@ server.run()
 ```
 
 
-
+## 9、发布定时任务
 ```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # app init pr
+    print("·"*12 + f" {app.title} startup by {os.getpid()} " + "·"*12)
+    # 添加定时任务
+    scheduler.add_job(
+        cache_check,                  # cache是我的缓存处理函数
+        "cron", 
+        id=9005, 
+        name="cacheCheck", 
+        replace_existing=True,
+        day_of_week="1,3,5,7",        # 每周隔一天执行
+        hour=23,                      # 执行时间23:10
+        minute=10
+    )  # 每天晚上进行检修
+    await warmup_app_init()
+    yield
+    # app killed post op
+    scheduler.shutdown()
+    print("·"*12 + f" {os.getpid()} shutdown ok " + "·"*12)
 
+
+async def cache_check() -> None:
+    """定时检查缓存文件是否过期"""
+
+    cache_dir, soft_link = await check_cache_env()
+    time_stamp = datetime.datetime.now().strftime(r"%y%m%d") - int(os.getenv("CACHE_TIME", 14))
+    logger.info("开始执行检修程序...")
+
+    for file in cache_dir.iterdir():
+        file_stem_list = file.stem.split("-")
+        if int(file_stem_list[-1]) > time_stamp: continue
+        soft_link_path = soft_link / f"{file_stem_list[0]}-{file_stem_list[1]}"
+        await unlink_file(soft_file_path=soft_link_path)
 ```
+
+参考 [https://blog.csdn.net/lipachong/article/details/99962134](https://blog.csdn.net/lipachong/article/details/99962134)
