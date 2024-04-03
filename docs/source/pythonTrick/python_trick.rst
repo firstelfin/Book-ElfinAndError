@@ -8,3 +8,4 @@ Python代码技巧
 
     download_img
     async_await
+    fastapi
