@@ -151,17 +151,6 @@ server.run()
 async def lifespan(app: FastAPI):
     # app init pr
     print("·"*12 + f" {app.title} startup by {os.getpid()} " + "·"*12)
-    # 添加定时任务
-    scheduler.add_job(
-        cache_check,                  # cache是我的缓存处理函数
-        "cron", 
-        id=9005, 
-        name="cacheCheck", 
-        replace_existing=True,
-        day_of_week="1,3,5,7",        # 每周隔一天执行
-        hour=23,                      # 执行时间23:10
-        minute=10
-    )  # 每天晚上进行检修
     await warmup_app_init()
     yield
     # app killed post op
@@ -169,10 +158,10 @@ async def lifespan(app: FastAPI):
     print("·"*12 + f" {os.getpid()} shutdown ok " + "·"*12)
 
 
-async def cache_check() -> None:
+def cache_check() -> None:
     """定时检查缓存文件是否过期"""
 
-    cache_dir, soft_link = await check_cache_env()
+    cache_dir, soft_link = check_cache_env()
     time_stamp = datetime.datetime.now().strftime(r"%y%m%d") - int(os.getenv("CACHE_TIME", 14))
     logger.info("开始执行检修程序...")
 
@@ -180,7 +169,32 @@ async def cache_check() -> None:
         file_stem_list = file.stem.split("-")
         if int(file_stem_list[-1]) > time_stamp: continue
         soft_link_path = soft_link / f"{file_stem_list[0]}-{file_stem_list[1]}"
-        await unlink_file(soft_file_path=soft_link_path)
+        unlink_file(soft_file_path=soft_link_path)
+
+# 添加定时任务
+scheduler.add_job(
+    cache_check,                  # cache是我的缓存处理函数，注意如果使用async函数可能会有问题
+    "cron", 
+    id="9005", 
+    name="cacheCheck", 
+    replace_existing=True,
+    day_of_week="1,3,5",        # 每周隔一天执行, 从0开始
+    hour=23,                      # 执行时间23:10
+    minute=10
+)  # 每天晚上进行检修
+    
+"""
+可以使用魔法方法添加
+@scheduler.scheduled_job(
+    "cron", 
+    id="cache_check", 
+    name="cacheCheck",
+    day_of_week="1,3,4,5",
+    hour=11,
+    minute="0-59",
+    second=0
+)
+"""
 ```
 
 参考 [https://blog.csdn.net/lipachong/article/details/99962134](https://blog.csdn.net/lipachong/article/details/99962134)
