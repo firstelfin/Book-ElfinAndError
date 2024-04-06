@@ -17,4 +17,5 @@
    pythonTrick/python_trick
    gitTrick/git_trick
    diffusion/diffusion_study
+   deepLearning/learning
    music/music
