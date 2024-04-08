@@ -8,4 +8,5 @@ Python代码技巧
 
     download_img
     async_await
+    torch_indexed with multiple tensors
     fastapi
