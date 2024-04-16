@@ -20,3 +20,4 @@
    deepLearning/learning
    music/music
    BWD/bwd
+   srcDoc/paper
