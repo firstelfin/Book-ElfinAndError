@@ -197,4 +197,66 @@ scheduler.add_job(
 """
 ```
 
+
+## 10、Form数据与Query
+
+form-data数据类型不能和json共存。遗憾的是全Form类型参数也不能使用BaseModel封装为类，我们只能在路由函数里面一个参数一个参数的写。在应用过程中，工程部分参数不是使用Form传递，而是基于查询参数传递。由于工程可能比较任性，他们会传入一些没有定义的参数，所以工程侧给的案例是使用一个Request对象的参数接收传入的信息，实现动态参数传入，再自己解析需要的。
+
+鉴于前面的请求体，本身已经具有接收非必要参数(请求体未定义),所以猜测这里也是可以实现的，这样就避免了隐变量的注入，通过显示的行参定义，让框架做解析，保证错误的及时处理，这样不用自己再次对参数进行验证。
+
+下面是一个测试案例：
+
+```python
+@app.put("/")
+async def get_label(
+    file:        bytes = File2(),
+    reqID:         int = Form(-1),
+    reqTime:       int = Form(-1),
+    model_conf:  float = Query(0.25, strict=False),
+    area_thresh: float = Query(10000, strict=False),
+    window_size: float = Query(60, strict=False)
+):
+    img = img_decode(file)
+    return {"model_conf": model_conf, "area_thresh": area_thresh, "window_size": window_size, "shape": img.shape}
+
+```
+
+> 注意：这里的area_thresh如果是整型，我们如果在形参上定义为: `area_thresh: int = 10000`, 那query参数在请求是如果是area_thresh=30.5，即小数部分不为0,那么参数解析会报错，area_thresh=30.0是可以解析的。
+
+
+调用案例：
+
+```python
+
+with open("/home/elfin/Figure_2.png", "rb") as f:
+    img_bytes = f.read()
+    
+
+def put_test2(url, data):
+    res = httpx.put(
+        url=url,
+        params=QueryParams(
+            elfin="china", 
+            save="cccc", 
+            other="other", 
+            window_size=320.5,
+            model_conf=0.25,
+            area_thresh=10000
+        ),
+        files={"file": data["file"]},
+        data={"name": data["name"], "points": [36, 45, 12]},
+        timeout=20
+    )
+    print(res.json())
+
+put_test2(
+    url="xxxx",
+    data={
+        "file": img_bytes,
+        "name": "industai"
+    }
+)
+```
+
+
 参考 [https://blog.csdn.net/lipachong/article/details/99962134](https://blog.csdn.net/lipachong/article/details/99962134)
