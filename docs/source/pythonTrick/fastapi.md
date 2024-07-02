@@ -20,7 +20,7 @@ app = FastAPI(
 ## 2、定义输入输出对象
 
 ```python
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 class File(BaseModel):
@@ -29,15 +29,31 @@ class File(BaseModel):
     imageId:  str
     pointName:          Optional[str] = None
     suppress: Optional[SuppressParam] = None
+    num:                        float = 0.25
+    min_num:                    float = 0.
+    max_num:                    float = 3.
 
     def get_demo(self):
         # 可定义一些对请求体处理的内部逻辑
         pass
 
+    @model_validator(mode="after")
+    @classmethod
+    def valid(cls, values):
+        """设置参数范围检查"""
+        num = values.num
+        a = values.min_num
+        b = values.max_num
+        if num < a: values.num = a
+        if num > b: values.num = b
+        return values
+
 
 class ResItem(BaseModel):
     msgReqId: str
 ```
+
+自定义对象, 默认是没有参数范围检查的，我们需要使用model_validator装饰器进行检查。`mode="after"`是设置BaseModel生成好类属性后再进行操作。这样可以实现框架在解析过程中自动帮助我们验证参数范围，与fastapi自带的参数解析不一样，我们在valid方法中对超出范围的数值进行了截断操作(如查询参数Query使用ge、gt、le、lt参数设置取之范围，不满足范围会直接解析报错)。
 
 ## 3、设置生命周期操作
 
@@ -212,9 +228,9 @@ async def get_label(
     file:        bytes = File2(),
     reqID:         int = Form(-1),
     reqTime:       int = Form(-1),
-    model_conf:  float = Query(0.25, strict=False),
-    area_thresh: float = Query(10000, strict=False),
-    window_size: float = Query(60, strict=False)
+    model_conf:  float = Query(0.25, ge=0, le=1 strict=False),
+    area_thresh: float = Query(10000, ge=800, le=60000, strict=False),
+    window_size: float = Query(60, ge=0, le=10000, strict=False)
 ):
     img = img_decode(file)
     return {"model_conf": model_conf, "area_thresh": area_thresh, "window_size": window_size, "shape": img.shape}
@@ -222,6 +238,8 @@ async def get_label(
 ```
 
 > 注意：这里的area_thresh如果是整型，我们如果在形参上定义为: `area_thresh: int = 10000`, 那query参数在请求是如果是area_thresh=30.5，即小数部分不为0,那么参数解析会报错，area_thresh=30.0是可以解析的。
+
+> 注意Query(0.25, ge=0, le=1 strict=False)中设置了参数必须大于等于0小于等于1，越界会报422的错误。
 
 
 调用案例：
