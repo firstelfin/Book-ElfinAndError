@@ -9,8 +9,8 @@ project = 'ElfinAndError'
 copyright = '2024, firstelfin'
 author = 'firstelfin'
 
-release = '0.1'
-version = '0.1.0'
+release = '0.1.1'
+version = '0.1.1'
 
 # -- General configuration
 
@@ -25,6 +25,11 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.mermaid'
 ]
+
+html_js_files = [
+    'https://unpkg.com/mermaid/dist/mermaid.min.js'
+]
+
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "markdown",
