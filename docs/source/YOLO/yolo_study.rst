@@ -7,3 +7,4 @@ YOLO Study
     :maxdepth: 2
 
     ultralytics库收录的主要结构
+    yolo_test

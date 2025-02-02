@@ -16,6 +16,7 @@ version = '0.1.1'
 
 extensions = [
     'myst_parser',
+    'sphinxcontrib.mermaid',
     'sphinx_copybutton',
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
@@ -23,12 +24,14 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.mermaid'
 ]
 
-html_js_files = [
-    'https://unpkg.com/mermaid/dist/mermaid.min.js'
-]
+# html_js_files = [
+#     'https://unpkg.com/mermaid/dist/mermaid.min.js'
+# ]
+# 确保 _static 目录被包含在内
+# html_static_path = ['js']
+
 
 source_suffix = {
     ".rst": "restructuredtext",
@@ -51,3 +54,22 @@ html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+# -- Options for MyST
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",  # 允许 $ 作为数学公式的开始符号
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "replacements",  # 允许使用 ! 替换图片链接
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
+myst_fence_as_directive = ["mermaid"]  # 允许 mermaid 作为一个指令, 没有这一行，前面的扩展不会生效
+
