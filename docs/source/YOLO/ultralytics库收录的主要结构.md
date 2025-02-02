@@ -651,9 +651,9 @@ V7主要使用了高效层聚合网络(ELAN)的改进版本E-ELAN。
 
 ```mermaid
 graph TD
-	classDef customStyle fill:#f96,stroke:#000,stroke-width:2;
-   	classDef customStyle2 fill:#f233,stroke:#000,stroke-width:2;
-   	subgraph E-ELAN
+    classDef customStyle fill:#f96,stroke:#000,stroke-width:2;
+    classDef customStyle2 fill:#f233,stroke:#000,stroke-width:2;
+    subgraph E-ELAN
     	eelan_input(Input) --> eelan_conv1[Conv1<br/>c_in=2c,c_out=2c]
     	eelan_conv1 --> eelan_conv2[Conv2<br/>c_in=2c,c_out=2c]
     	eelan_conv2 --> eelan_conv3[Conv3<br/>c_in=2c,c_out=2c]
