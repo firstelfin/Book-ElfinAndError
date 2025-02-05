@@ -30,7 +30,7 @@
 
 ## 1.1 DETR模型结构
 
-<img src='yolo_images/DETR_结构.png' alt='DETR结构图, 论文原图'>
+<img src='yolo_images/detr_结构.png' alt='DETR结构图, 论文原图'>
 
 1. backbone中的CNN是默认使用ResNet50, 然后平铺HW维度（默认使用最后一层的输出）；
 2. encoder部分是将backbone的输出和对应的特征图位置编码相加，得到Transformer编码器的输入，encoder默认是迭代6次，每次输入都是位置编码和上一次的输出（第一次是backbone输出）；
