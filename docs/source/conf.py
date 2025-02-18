@@ -24,6 +24,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.htmlhelp',
+    'sphinxcontrib.serializinghtml',  # 支持多格式输出
 ]
 
 # html_js_files = [
