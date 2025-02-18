@@ -172,7 +172,7 @@ $$
 虽然 DeepSeek-V3 主要依靠辅助无损策略进行负载均衡，但为了防止任何单个序列内的极端不平衡，我们还采用了**互补序列平衡损失**（设计了一种目标函数）。
 $$
 \begin{align}
-L_{bal} &= \alpha \Sigma_{i=1}^{N_{r}}{f_{i}P_{i}} \\
+\mathcal{L}_{bal} &= \alpha \Sigma_{i=1}^{N_{r}}{f_{i}P_{i}} \\
 f_{i} &= \frac{N_{r}}{K_{r}T} \Sigma_{i=1}^{T}{\mathbb{I}(s_{i,t} \in \text{TopK}(\left \{ s_{j,t} \mid 1 \le j \le N_{r} \right \}, K_{r}))} \\
 s_{i,t}^{\prime} &= \frac{s_{i,t}}{\Sigma_{j=1}^{N_{r}}{s_{j,t}}} \\
 P_{i} &= \frac{1}{T} \Sigma_{t=1}^{T}{s_{i,t}^{\prime}}
@@ -203,6 +203,8 @@ $$
 
 ## 1.3 MTP 多token预测
 
+### 1.3.1 MTP模型
+
 MTP任务设计如图所示：
 
 <img src="images/deepseek-MTP.png" alt="deepseek-MTP" width=700>
@@ -210,6 +212,47 @@ MTP任务设计如图所示：
 如图所示：
 
 - 第$k$个MTP模块共享主分支的嵌入层$Emb(\cdot)$，共享输出头$OutputHead(\cdot)$，以及独享一个Transformer模块$TRM_{k}(\cdot)$和一个投射矩阵$M_{k} \in \mathbb{R}^{d \times 2d}$。
+
+- 对于第$i$个token在第$k$个预测深度，MTP模块是将第$k-1$个深度$i$个token的表示$\mathbf{h}_{i}^{k-1} \in \mathbb{R}^{d}$和第$i+k$个token的位置编码($Emb(t_{i+k}) \in \mathbb{R}^{d}$)分别经过$RMSNorm$处理，再合并，作为线性映射的输入:
+    $$
+    \mathbf{h}_{i}^{\prime k} = M_{k}[\textcolor{green}{RMSNorm}(\mathbf{h}_{i}^{k-1});\textcolor{green}{RMSNorm}(\textcolor{green}{Emb}(t_{i+k}))]
+    $$
+
+- 组合第$k$个深度对应token的$\mathbf{h}_{i}^{\prime k}$作为Transformer模块的输入，经过$TRM_{k}(\cdot)$函数得到$\mathbf{h}_{i}^{k}$。
+    $$
+    \mathbf{h}_{1:T-k}^{k} = \textcolor{green}{TRM_{k}}(\mathbf{h}_{1:T-k}^{\prime k})
+    $$
+    其中，$1:T-k$是序列1到T的一个长度为k的切片。
+
+- 将切片对应的$\mathbf{h}_{i}^{k}$组合作为共享头$OutputHead(\cdot)$的输入，输出第$k$个附加预测的概率：
+    $$
+    P_{i+k+1}^{k} = \textcolor{green}{OutputHead}(\mathbf{h}_{i}^{k}), \quad P_{i+k+1}^{k} \in \mathbb{R}^{V}
+    $$
+    $V$是词典的大小。
+
+
+
+### 1.3.2 MTP损失设置
+
+对于每一个预测深度，我们都设置一个交叉熵损失：
+$$
+\mathcal{L}_{MTP}^{k} = \textcolor{green}{CrossEntropy}(P_{2+k:T+1}^{k},t_{2+k:T+1}) = - \frac{1}{T} \Sigma_{i=2+k}^{T+1}{log P_{i}^{k}[t_{i}]}
+$$
+其中，$T+1$超出了序列索引？因为我们的GT是下一个时刻的输出，所以我们要预测多一个，这样才能和GT进行对齐；其中$P_{i}^{k}[t_{i}]$是第$k$个深度预测对$t_{i}$的预测概率。引入一个MTP因子$\lambda$，整合所有MTP头损失，最后得到平均MTP损失：
+$$
+\mathcal{L}_{MTP} = \frac{\lambda}{D} \Sigma_{k=1}^{D}{\mathcal{L}_{MTP}^{k}}
+$$
+
+
+推理时我们直接忽略MTP头即可，只使用主模型预测。
+
+---
+
+<p align="right">
+    <b><a href="#top">Top</a></b>
+	 <b>---</b> 
+	<b><a href="#bottom">Bottom</a></b>
+</p>
 
 
 
@@ -221,6 +264,7 @@ MTP任务设计如图所示：
 	 <b>---</b> 
 	<b><a href="#bottom">Bottom</a></b>
 </p>
+
 
 # deepseek系列参考
 
