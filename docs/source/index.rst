@@ -12,8 +12,6 @@
 .. toctree::
    :maxdepth: 2
 
-   usage
-   api
    Detect/Detect
    pythonTrick/python_trick
    gitTrick/git_trick

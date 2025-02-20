@@ -6,4 +6,4 @@
 .. toctree::
     :maxdepth: 2
 
-    yolov9
+    deepseek
