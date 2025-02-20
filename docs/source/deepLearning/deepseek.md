@@ -91,6 +91,7 @@ $$
 ### 1.1.3 MLA注意力
 
 如1.1.1中定义的**键**$K_{j,i}$，**值**$V_{j,i}^{C}$，1.1.2中的**查询**$Q_{t,i}$，$i$标记了head的索引。
+
 $$
 \begin{align}
 O_{t,i} &= \Sigma_{j=1}^{t}Softmax_{j}(\frac{Q_{t,i}^{T} \times K_{j,i}}{\sqrt{d_{h} + d_{h}^{R}}}) \times V_{j,i}^{C} \\
@@ -239,7 +240,7 @@ MTP任务设计如图所示：
     $$
     \mathbf{h}_{1:T-k}^{k} = \textcolor{green}{TRM_{k}}(\mathbf{h}_{1:T-k}^{\prime k})
     $$
-    
+
     其中，$1:T-k$是序列1到T的一个长度为k的切片。
 
 - 将切片对应的$\mathbf{h}_{i}^{k}$组合作为共享头$OutputHead(\cdot)$的输入，输出第$k$个附加预测的概率：
@@ -255,10 +256,13 @@ MTP任务设计如图所示：
 ### 1.3.2 MTP损失设置
 
 对于每一个预测深度，我们都设置一个交叉熵损失：
+
 $$
 \mathcal{L}_{MTP}^{k} = \textcolor{green}{CrossEntropy}(P_{2+k:T+1}^{k},t_{2+k:T+1}) = - \frac{1}{T} \Sigma_{i=2+k}^{T+1}{log P_{i}^{k}[t_{i}]}
 $$
+
 其中，$T+1$超出了序列索引？因为我们的GT是下一个时刻的输出，所以我们要预测多一个，这样才能和GT进行对齐；其中$P_{i}^{k}[t_{i}]$是第$k$个深度预测对$t_{i}$的预测概率。引入一个MTP因子$\lambda$，整合所有MTP头损失，最后得到平均MTP损失：
+
 $$
 \mathcal{L}_{MTP} = \frac{\lambda}{D} \Sigma_{k=1}^{D}{\mathcal{L}_{MTP}^{k}}
 $$
