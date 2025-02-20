@@ -75,3 +75,4 @@ myst_enable_extensions = [
 ]
 myst_fence_as_directive = ["mermaid"]  # 允许 mermaid 作为一个指令, 没有这一行，前面的扩展不会生效
 
+latex_engine = 'xelatex'
