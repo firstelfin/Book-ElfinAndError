@@ -18,7 +18,9 @@
 	 <b>---</b> 
 	<b><a href="#bottom">Bottom</a></b>
 </p>
-DeepSeek-V3模型是一个 **混合专家模型(MoE)** ，总共671B的参数，对于每一个token只激活37B。为了实现高效推理和训练，DeepSeek-V3采用了**多头潜在注意力(Multi-head Latent Attention: MLA)**和DeepSeekMoE架构，这些在DeepSeek-V2中已经验证过。针对负载平衡和多标签预测训练目标，DeepSeek-V3提出了辅助无损策略。
+
+
+DeepSeek-V3模型是一个**混合专家模型(MoE)**，总共671B的参数，对于每一个token只激活37B。为了实现高效推理和训练，DeepSeek-V3采用了**多头潜在注意力(Multi-head Latent Attention: MLA)**和DeepSeekMoE架构，这些在DeepSeek-V2中已经验证过。针对负载平衡和多标签预测训练目标，DeepSeek-V3提出了辅助无损策略。
 
 **结构创新点**：
 
@@ -41,6 +43,7 @@ DeepSeek-V3模型是一个 **混合专家模型(MoE)** ，总共671B的参数，
 	 <b>---</b> 
 	<b><a href="#bottom">Bottom</a></b>
 </p>
+
 
 ## 1.1 MLA: Multi-head Latent Attention
 
@@ -70,6 +73,7 @@ $$
 ### 1.1.2 Query的通道降维
 
 和Key、Value一样，作者也进行通道的压缩，以降低缓存压力。
+
 $$
 \begin{align}
 C_{t}^{Q} &= W^{DQ} h_{t},\qquad C_{t}^{Q} \in \mathbb{R}^{d_{c}^{\prime}}, \quad W^{DQ} \in \mathbb{R}^{d_{c}^{\prime} \times d} \\
@@ -117,15 +121,18 @@ $$
 	<b><a href="#bottom">Bottom</a></b>
 </p>
 
+
 ## 1.2 具有辅助无损负载均衡的DeepSeekMoE
 
 <img src="images/deepseek-v3_MoE.png" alt="deepseek-v3_MoE" width=650>
 
 > 图中的列表内分号表示Cat操作！
 
+
 ### 1.2.1 DeepSeekMoE结构
 
 在前馈神经网络(FFN)中，DeepSeek-V3采用了DeepSeekMoE结构。与传统的MoE结构(Shard)相比，DeepSeekMoE 使用更细粒度的专家，并将一些专家隔离为共享专家。令$U_{t}$表示第$t$个token的FFN输入，FFN的输出$h_{t}^{\prime}$可以如下表示：
+
 $$
 \begin{align}
 h_{t}^{\prime} &= U_{t} + \Sigma_{i=1}^{N_{s}}{FFN_{i}^{(s)}(U_{t})} + \Sigma_{i=1}^{N_{r}}{g_{i,t}FFN_{i}^{(r)}(U_{t})} \\
@@ -137,6 +144,7 @@ s_{i,t} \quad &s_{i,t} \in \text{TopK}(\left \{ s_{j,t} \mid 1 \le j \le N_{r} \
 s_{i,t} &= \text{Sigmoid}(U_{t}^{T}e_{i})
 \end{align}
 $$
+
 其中，$N_{s}, N_{r}$分别表示共享专家和路由专家的数量，$FFN_{i}^{(s)}(U(\cdot)), FFN_{i}^{(r)}(U(\cdot))$分别表示第$i$个共享专家和路由专家。$K_{r}$表示激活的路由专家数量，$g_{i,t}$表示第$i$个专家的门控值(softmax概率)，$s_{i,t}$是输入token和专家的关联性表示，是第$i$个专家的质心向量(特征表示)。$\text{TopK}(\cdot,K)$计算前K个有关联的专家。
 
 
@@ -174,6 +182,7 @@ $$
 ### 1.2.3 互补序列辅助损失
 
 虽然 DeepSeek-V3 主要依靠辅助无损策略进行负载均衡，但为了防止任何单个序列内的极端不平衡，我们还采用了**互补序列平衡损失**（设计了一种目标函数）。
+
 $$
 \begin{align}
 \mathcal{L}_{bal} &= \alpha \Sigma_{i=1}^{N_{r}}{f_{i}P_{i}} \\
@@ -205,6 +214,8 @@ $$
 	<b><a href="#bottom">Bottom</a></b>
 </p>
 
+
+
 ## 1.3 MTP 多token预测
 
 ### 1.3.1 MTP模型
@@ -218,20 +229,25 @@ MTP任务设计如图所示：
 - 第$k$个MTP模块共享主分支的嵌入层$Emb(\cdot)$，共享输出头$OutputHead(\cdot)$，以及独享一个Transformer模块$TRM_{k}(\cdot)$和一个投射矩阵$M_{k} \in \mathbb{R}^{d \times 2d}$。
 
 - 对于第$i$个token在第$k$个预测深度，MTP模块是将第$k-1$个深度$i$个token的表示$\mathbf{h}_{i}^{k-1} \in \mathbb{R}^{d}$和第$i+k$个token的位置编码($Emb(t_{i+k}) \in \mathbb{R}^{d}$)分别经过$RMSNorm$处理，再合并，作为线性映射的输入:
+    
     $$
     \mathbf{h}_{i}^{\prime k} = M_{k}[\textcolor{green}{RMSNorm}(\mathbf{h}_{i}^{k-1});\textcolor{green}{RMSNorm}(\textcolor{green}{Emb}(t_{i+k}))]
     $$
 
 - 组合第$k$个深度对应token的$\mathbf{h}_{i}^{\prime k}$作为Transformer模块的输入，经过$TRM_{k}(\cdot)$函数得到$\mathbf{h}_{i}^{k}$。
+    
     $$
     \mathbf{h}_{1:T-k}^{k} = \textcolor{green}{TRM_{k}}(\mathbf{h}_{1:T-k}^{\prime k})
     $$
+    
     其中，$1:T-k$是序列1到T的一个长度为k的切片。
 
 - 将切片对应的$\mathbf{h}_{i}^{k}$组合作为共享头$OutputHead(\cdot)$的输入，输出第$k$个附加预测的概率：
+    
     $$
     P_{i+k+1}^{k} = \textcolor{green}{OutputHead}(\mathbf{h}_{i}^{k}), \quad P_{i+k+1}^{k} \in \mathbb{R}^{V}
     $$
+
     $V$是词典的大小。
 
 
