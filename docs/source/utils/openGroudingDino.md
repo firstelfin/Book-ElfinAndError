@@ -13,3 +13,9 @@
 3. BERT预训练模型：git clone https://hf-mirror.com/google-bert/bert-base-uncased
 
 > huggingFace配置: https://hf-mirror.com/
+
+> 1. 安装要注意transformer库版本太高会使用torch2的接口，可能会报错
+> 2. 显卡的指定要注意py文件和终端不要冲突
+
+---
+
