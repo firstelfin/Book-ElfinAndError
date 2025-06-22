@@ -26,7 +26,14 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
+    'sphinx.ext.mathjax2',
 ]
+
+mathjax3_config = {
+    "tex": {
+        "packages": {"[+]": ["ams", "boldsymbol"]}
+    }
+}
 
 # html_js_files = [
 #     'https://unpkg.com/mermaid/dist/mermaid.min.js'
