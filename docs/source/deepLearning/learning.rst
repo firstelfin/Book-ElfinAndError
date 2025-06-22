@@ -8,3 +8,4 @@
 
     deepseek
     DCN
+    PE
