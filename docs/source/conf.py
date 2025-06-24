@@ -26,7 +26,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
-    'sphinx.ext.imagemath',
+    'sphinx.ext.imgmath',
 ]
 
 
