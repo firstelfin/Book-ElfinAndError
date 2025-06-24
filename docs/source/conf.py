@@ -29,7 +29,10 @@ extensions = [
     'sphinx.ext.imgmath',
 ]
 
-
+# 可选配置
+imgmath_image_format = 'svg'  # 或 png
+imgmath_font_size = 14
+imgmath_latex_preamble = r'\usepackage{amsmath}'
 
 
 source_suffix = {
