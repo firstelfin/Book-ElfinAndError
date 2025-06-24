@@ -26,10 +26,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
-    'sphinx.ext.mathjax',
+    'sphinx.ext.imagemath',
 ]
 
-mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js' 
 
 
 
