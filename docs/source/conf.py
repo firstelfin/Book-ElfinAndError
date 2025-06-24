@@ -26,13 +26,11 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
+    'sphinx.ext.mathjax',
 ]
 
-# html_js_files = [
-#     'https://unpkg.com/mermaid/dist/mermaid.min.js'
-# ]
-# 确保 _static 目录被包含在内
-# html_static_path = ['js']
+mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js' 
+
 
 
 source_suffix = {
