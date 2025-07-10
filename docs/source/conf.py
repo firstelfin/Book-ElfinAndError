@@ -28,7 +28,6 @@ extensions = [
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
     'sphinx.ext.imgmath',
     'sphinx_markdown_tables',
-    'recommonmark'
 ]
 
 # 可选配置
