@@ -5,3 +5,5 @@ sphinx-copybutton
 sphinxcontrib.mermaid
 sphinxcontrib-htmlhelp
 sphinxcontrib-serializinghtml
+sphinx-markdown-tables
+recommonmark
