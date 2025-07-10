@@ -34,10 +34,10 @@ extensions = [
 imgmath_image_format = 'svg'  # 或 png
 imgmath_font_size = 14
 # imgmath_latex_preamble = r'\usepackage{amsmath}'
-imgmath_latex_preamble = r'''
-    \usepackage{xcolor}
-    \usepackage{amsmath}
-'''
+# imgmath_latex_preamble = r'''
+#     \usepackage{xcolor}
+#     \usepackage{amsmath}
+# '''
 
 
 source_suffix = {
