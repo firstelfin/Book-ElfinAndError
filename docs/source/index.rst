@@ -20,7 +20,6 @@
    music/music
    BWD/bwd
    srcDoc/paper
-   CUDA/cuda
    DOCKER/docker_usage
 
 Download the PDF file here: :download:`your_file.pdf <_static/deepseek.pdf>
