@@ -27,7 +27,7 @@ extensions = [
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
     'sphinx.ext.imgmath',
-    'sphinx-markdown-tables',
+    'sphinx_markdown_tables',
     'recommonmark'
 ]
 
