@@ -90,7 +90,7 @@ void check(const double* z, const int N)
 
 一个典型的CUDA程序的基本框架
 
-```txt
+```text
 头文件包含
 常量定义(或者宏定义)
 C++自定义函数和CUDA核函数的声明(原型)

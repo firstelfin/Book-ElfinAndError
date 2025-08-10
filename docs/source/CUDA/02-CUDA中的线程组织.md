@@ -362,12 +362,15 @@ Hello wolrd from  block-(0,1) and thread-(1,1)!
 
 
 需要注意的是tread的索引出现是有固定规律的：(0,0)、(1,0)、(0,1)、(1,1)。实际上，cuda的线程块内，多维情况下，x轴的取值变换最快，z轴最慢。如果我们要计算某个线程在block中的顺序时，可以使用如下的公式计算：
+
 $$
-\text{tid} = {\color{Red}\text{treadIdx.x} } + {\color{Green}\text{blockDim.x}\times \text{treadIdx.y} }+ {\color{Orange}\text{blockDim.x}\times \text{blockDim.y} \times \text{treadIdx.z}}
+\text{tid} = \text{threadIdx.x} + \text{blockDim.x} \times \text{threadIdx.y}+ \text{blockDim.x} \times \text{blockDim.y} \times \text{threadIdx.z}
 $$
+
 多维网格中，block是没有顺序的，但是我们可以类似地定义其平铺的索引：
+
 $$
-\text{bid} = {\color{Red}\text{blockIdx.x} } + {\color{Green}\text{gridDim.x}\times \text{blockIdx.y} }+ {\color{Orange}\text{gridDim.x}\times \text{gridDim.y} \times \text{blockIdx.z}}
+\text{bid} = \text{blockIdx.x} + \text{gridDim.x} \times \text{blockIdx.y}+ \text{gridDim.x} \times \text{gridDim.y} \times \text{blockIdx.z}
 $$
 
 

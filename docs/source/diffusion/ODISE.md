@@ -11,8 +11,6 @@
 ---
 
 
----
-
 <p align="right">
     <b><a href="#top">Top</a></b>
 	&nbsp;<b>---</b>&nbsp;

@@ -26,7 +26,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.htmlhelp',
     'sphinxcontrib.serializinghtml',  # 支持多格式输出
-    'sphinx.ext.imgmath',
+    # 'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
     'sphinx_markdown_tables',
 ]
 
@@ -61,6 +62,9 @@ html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+myst_heading_anchors = 2
+suppress_warnings = ["myst.header"]
 
 # -- Options for MyST
 myst_enable_extensions = [
