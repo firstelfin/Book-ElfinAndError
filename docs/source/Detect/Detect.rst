@@ -8,3 +8,4 @@
 
     ultralytics库收录的主要结构
     DETR模型
+    RT-DETR系列模型

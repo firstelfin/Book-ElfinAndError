@@ -18,8 +18,6 @@ K: Em
 "G"g2ab3|"Em"gfe"D"f2d|"Em"e3-e3:|
 ```
 
-
-
-# 参考资料
+## 参考资料
 
 - [ABC依赖](https://github.com/sphinx-contrib/abc-music)

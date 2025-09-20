@@ -16,6 +16,7 @@ version = '0.1.1'
 
 extensions = [
     'myst_parser',
+    'abcSphinx',
     'sphinxcontrib.mermaid',
     'sphinx_copybutton',
     'sphinx.ext.duration',
