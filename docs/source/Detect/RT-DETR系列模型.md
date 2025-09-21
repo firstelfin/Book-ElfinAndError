@@ -4,6 +4,83 @@
     <p name="top" id="top" align="center"><b>作者：</b><b>elfin</b><b>资料来源：<a href="">github</a></b></p>
 </p>
 
+## D-FINE模型速览
+
+> 模型卡片:
+>
+> - 创新点1: 细粒度分布细化(**FDR**)
+> - 创新点2: 全局优化定位自蒸馏(**GO-LSD**)
+>
+> 资源目录:
+>
+> - 论文：[https://arxiv.org/abs/2410.13842](https://arxiv.org/abs/2410.13842)
+> - 代码：[https://github.com/Peterande/D-FINE](https://github.com/Peterande/D-FINE)
+
+### D-FINE工作简介
+
+**存在的问题**:
+
+- 大多数目标检测器是通过回归bbox边框的固定坐标, 将边缘视为由狄拉克(dirac)增量分布建模的精确值. 但是这种方法无法对GT实例的不确定性建模, 因其对坐标边缘变化的敏感性, 容易导致收敛缓慢和性能不佳. 所以在GFocal中提出了使用概率分布解决不确定性的训练方法, (在ultralytics库中也是目标检测的定位回归任务[DFL]的基线目标对象), 但是他们仍然受到anchor依赖、粗略定位和缺乏迭代细化的限制.
+- 如何最大限度地提高实时探测器的效率, 常规的方案有使用知识蒸馏技术(**KD**)将teacher的知识在student模型中固化. 传统的KD方法(如LogitMimicking和FeatureImitation)已被证明对于检测任务效率低下，甚至可能导致最先进模型的性能下降(Zheng等人,2022年)。相比之下, 定位蒸馏(**LD**)显示出更好的检测结果. 然而, 由于其大量的训练开销以及与anchor-free的不兼容, 集成LD仍然具有挑战性。
+
+**D-FINE的解决方案**:
+
+> 这是一种新型的实时目标检测器，它重新定义了边界框回归并引入了有效的自蒸馏策略。
+
+- 细粒度分布细化(**FDR**): 我们引入细粒度分布细化(FDR)将边界框回归从预测固定坐标转换为建模概率分布, 从而提供更细粒度的中间表示. FDR以残差方式迭代细化这些分布，允许逐步进行更精细的调整并提高定位精度.
+- 全局优化定位自蒸馏(**GO-LSD**): GO-LSD将定位知识从更深层转移到更浅的层, 额外的训练成本可以忽略不计. 通过将较浅层的预测与后面层的精细输出保持一致, 该模型可以学习产生更好的早期调整, 加速收敛并提高整体性能.
+- 此外, 我们还简化了现有实时DETR架构中的计算密集型模块(Zhao et al.2024;Chen等人,2024年), 使D-FINE更快、更轻. 虽然此类修改通常会导致性能损失, 但FDR和GO-LSD有效地减轻了这种退化, 在速度和准确性之间实现了更好的平衡.
+
+### GFocal与DFL
+
+GFocal使用离散概率分布回归了从锚点到四条边的距离, 从而提供了更灵活的边界框建模. 在实践中, 边界框距离$d=\left \{t,b,l,r \right \}$被建模为:
+
+$$
+\mathbf{d}=d_{max} \sum_{n=0}^{N} \frac{n}{N} \mathbf{P}(n)
+$$
+
+其中$d_{max}$是限制bbox到锚点中心的最大距离. $\mathbf{P}(n)$是表征边到锚点中心每个候选距离点概率. 虽然GFocal在通过概率分布处理模糊性和不确定性方面向前迈出了一步, 但其回归方法仍然存在以下挑战:
+
+- **锚点依赖性**: 回归与anchor中心相关联, 限制了预测多样性以及与anchor-free框架的兼容性
+- **无迭代细化**：预测是一次性进行的, 没有迭代细化, 降低了回归鲁棒性
+
+> 锚点依赖性对于anchor-free实际不算问题, 分布预测很好改写; 无迭代细化确实是一个设计问题
+
+### 定位自蒸馏LD
+
+**粗略定位** 固定的距离范围和均匀的bin间隔会导致粗略的定位, 特别是对于小物体, 因为每个bin代表着广泛的可能值.
+
+**定位蒸馏** (LD)是一种很有前途的方法, 表明转移定位知识对于检测任务更有效(Zheng等人,2022年). 它建立在 GFocal的基础上, 通过从教师模型中提炼出有价值的本地化知识来增强学生模型, 而不是简单地模仿分类logit或特征图. 尽管有其优点, 但该方法仍然依赖于基于anchor的架构, 并产生额外的训练成本.
+
+### 细粒度分布细化FDR
+
+这种方法独立捕获并优化每个边的不确定性. 通过利用非均匀加权功能, FDR可以在每个解码器层进行更精确和增量的调整, 从而提高定位精度并减少预测误差.
+
+<img src="yolo_images/D-FINE-FDR-show.png" alt="D-FINE FDR示意图">
+
+优化后的第$l$层解码器输出表示为:
+
+$$
+\mathbf{d}^{l} = \mathbf{d}^{0} + \left \{ H, H, W, W \right\} \cdot \sum_{n=0}^{N} W(n) \mathbf{Pr}^{l}(n), \quad l \in \left\{ 1,2,\cdots,L \right\}
+$$
+
+其中:
+
+- $\mathbf{b}^{0}=\left\{ x,y,W,H \right\}$是解码器经过传统检测器的bbox预测, 其中 $\left\{ x,y \right\}$ 是bbox中心坐标, $\left\{W,H\right\}$ 是bbox的宽和高;
+- $\mathbf{d}^{0}$是经过$\mathbf{c}^{0}=\left\{x,y\right\}$对$\mathbf{b}^{0}$的变换, 得到$\mathbf{c}^{0}$到边距离: $\mathbf{d}^{0}=\left\{t,b,l,r\right\}$;
+- $\mathbf{d}^{l} = \left\{t^{l},b^{l},l^{l},r^{l} \right\}$;
+- $\mathbf{Pr}^{l}(n) = \left\{ \text{Pr}_{t}^{l}(n), \text{Pr}_{b}^{l}(n), \text{Pr}_{l}^{l}(n), \text{Pr}_{r}^{l}(n)\right\}$. 每个元素预测相应边的候选偏移值的可能性. 这些候选者由加权函数$W(n)$确定, 其中$n$为离散bins索引, 每个箱对应于潜在的边偏移候选. 权值和偏移量的内积用于这一层的边偏移量(缩放尺寸)预测. 这些边缘偏移量按初始边界框的高度H和宽度W进行缩放, 确保调整与框大小成正比.
+
+每一层概率分布为:
+
+$$
+\mathbf{Pr}^{l}(n) = \text{Softmax} \left( logits^{l}(n) \right) = \text{Softmax} \left( \Delta logits^{l}(n) + logits^{l-1}(n) \right)
+$$
+
+---
+
+<p align="right"><b><a href="#top">Top</a></b><b>---</b><b><a href="#bottom">Bottom</a></b></p>
+
 ## DEIM模型速览
 
 > 模型卡片：
@@ -16,7 +93,7 @@
 > - 论文：[https://arxiv.org/abs/2412.04234](https://arxiv.org/abs/2412.04234)
 > - 代码：[https://github.com/Intellindust-AI-Lab/DEIM](https://github.com/Intellindust-AI-Lab/DEIM)
 
-### 工作简介
+### DEIM工作简介
 
 <img src="yolo_images/DEIM-Dense-o2o.png" alt="DEIM Dense O2O示意图">
 
