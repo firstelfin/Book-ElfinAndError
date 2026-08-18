@@ -30,6 +30,7 @@ extensions = [
     # 'sphinx.ext.imgmath',
     'sphinx.ext.mathjax',
     'sphinx_markdown_tables',
+    'sphinx.ext.graphviz',
 ]
 
 # 可选配置
